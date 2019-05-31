@@ -1,36 +1,46 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import withLayout from '../lib/withLayout';
+import { requestProducts, recieveProducts } from '../actions/products';
+import Product from '../components/Product';
+import { productsApi } from '../lib/products';
+
+
 
 
 
 class Index extends React.Component {
-  static getInitialProps ({ req }) {
-    const isServer = !!req
-    // DISPATCH ACTIONS HERE ONLY WITH `reduxStore.dispatch`
-    //reduxStore.dispatch(serverRenderClock(isServer));
-    //reduxStore.dispatch(incrementCount());
+  static async getInitialProps({ reduxStore }) {
+    
+   if(reduxStore.getState().products && reduxStore.getState().products.productsPreviewList &&
+   reduxStore.getState().products.productsPreviewList.length){
+     return {};
+   }
+    
+    try{
+      let { products, productsQuantity } = await productsApi.getList();
 
-    return {}
-  }
+      reduxStore.dispatch(recieveProducts({ products }));
+    } finally {
+      return {};
+    }    
+  }  
 
-  componentDidMount () {
-    // DISPATCH ACTIONS HERE FROM `mapDispatchToProps`
-    // TO TICK THE CLOCK
-   // this.timer = setInterval(() => this.props.startClock(), 1000)
-  }
-
-  componentWillUnmount () {
-    clearInterval(this.timer)
-  }
-
-  render () {
-    return <div>Test <a className="waves-effect waves-light btn"><i className="material-icons left">cloud</i>button</a></div>;
+  render() {
+    return <div className="row">
+      {this.props.products.map((product) => <Product key={product.id} product={product} />)}
+    </div>;
   }
 }
 
+const mapStateToProps = (state, ownProps) => ({
+  products: state.products.productsPreviewList
+});
+
+
+
 const Component = connect(
-  null,
+  mapStateToProps,
   null
 )(Index);
 

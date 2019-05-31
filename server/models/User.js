@@ -91,6 +91,6 @@ mongoSchema.set('toObject', {
 });
 
 
-const User = mongoose.model('User', mongoSchema);
+const User = mongoose.model('ShopUser', mongoSchema);
 
 module.exports = User;

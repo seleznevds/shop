@@ -10,5 +10,5 @@ node_modules/
 .coverage
 .env
 .next
-static/images/goods/*
-!static/images/goods/.gitkeep
+static/images/products/*
+!static/images/products/.gitkeep

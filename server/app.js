@@ -7,7 +7,7 @@ const session = require('express-session');
 const mongoSessionStore = require('connect-mongo');
 const helmet = require('helmet');
 require('dotenv').config();
-//const api = require('./api');
+const api = require('./api');
 //const auth = require('./googleAuth');
 const config = require('./config');
 const getRootUrl = require('../lib/getRootUrl');
@@ -42,12 +42,12 @@ app.prepare().then(async () => {
     const server = express();
     server.use(helmet());
     server.use(express.static(config.staticFolder));
-    
-    
-   
+
+
+
     const MongoStore = mongoSessionStore(session);
     const sess = {
-        name: 'forum.sid',
+        name: 'shop.sid',
         secret: process.env.SESSION_SECRET,
         store: new MongoStore({
             mongooseConnection: mongoose.connection,
@@ -78,32 +78,41 @@ app.prepare().then(async () => {
 
     // Then pass them to cors:
     server.use(cors(corsOptions));
+    api(server);
 
     //auth({ server, ROOT_URL });    
-   // api(server);
+    // 
 
 
-   /* server.get('/profile', (req, res) => {
-        app.render(req, res, '/profile');
+    /* server.get('/profile', (req, res) => {
+         app.render(req, res, '/profile');
+     });
+ 
+     server.get('/login', (req, res) => {
+         app.render(req, res, '/login');
+     });
+ 
+     server.get('/post/edit/:postId', (req, res) => {
+         const { postId } = req.params;
+         app.render(req, res, '/post/edit', { postId });
+     });
+ 
+     server.get('/post/create', (req, res) => {
+         app.render(req, res, '/post/create');
+     });
+ 
+     */
+
+    server.get('/product/:productId', (req, res) => {
+        const { productId } = req.params;
+        app.render(req, res, '/product', { productId });
     });
 
-    server.get('/login', (req, res) => {
-        app.render(req, res, '/login');
+    server.get('/admin/add-products', (req, res) => {
+        app.render(req, res, '/admin/add-product');
     });
+   
 
-    server.get('/post/edit/:postId', (req, res) => {
-        const { postId } = req.params;
-        app.render(req, res, '/post/edit', { postId });
-    });
-
-    server.get('/post/create', (req, res) => {
-        app.render(req, res, '/post/create');
-    });
-
-    server.get('/post/:postId', (req, res) => {
-        const { postId } = req.params;
-        app.render(req, res, '/post', { postId });
-    });*/
 
 
     server.get('*', (req, res) => {
