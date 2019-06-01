@@ -1,81 +1,90 @@
-import { RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED } from '../actions/actionConstants';
+import { RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED, RECEIVE_ORDER } from '../actions/actionConstants';
 
-const calculateTotalAndTotalDiscount =  ({ products,
+const calculateTotalAndTotalDiscount = ({ products,
     discountPercent,
     discountMoney }) => {
-        let totalPrice = 0,
+    let totalPrice = 0,
         totalPriceWhithDiscount = 0;
-        
-        if(products.length){
-            totalPrice = products.reduce((total, product) => {
-                return total + (product.price || 0) * product.quantity;
-            }, 0);
 
-            if(discountMoney) {
-                totalPriceWhithDiscount = Math.ceil(totalPrice - discountMoney);
-            } else if(discountPercent){
-                totalPriceWhithDiscount = Math.ceil(totalPrice - (totalPrice * discountPercent / 100));
-            } else {
-                totalPriceWhithDiscount = totalPrice;
-            }
+    if (products.length) {
+        totalPrice = products.reduce((total, product) => {
+            return total + (product.price || 0) * product.quantity;
+        }, 0);
+
+        if (discountMoney) {
+            totalPriceWhithDiscount = Math.ceil(totalPrice - discountMoney);
+        } else if (discountPercent) {
+            totalPriceWhithDiscount = Math.ceil(totalPrice - (totalPrice * discountPercent / 100));
+        } else {
+            totalPriceWhithDiscount = totalPrice;
         }
+    }
 
-        return {
-            totalPrice,
-            totalPriceWhithDiscount
-        };
+    return {
+        totalPrice,
+        totalPriceWhithDiscount
+    };
 }
 
 let totalPrice, totalPriceWhithDiscount, quantity;
 
-export default (state = {
-    products:[],
+let initialState = {
+    products: [],
     productsDetails: [],
     totalPrice: 0,
     totalPriceWhithDiscount: 0,
-    discountPercent:0,
-    discountMoney:0,
+    discountPercent: 0,
+    discountMoney: 0,
     quantity: 0
-}, action) => {
+};
+
+export default (state = initialState, action) => {
     switch (action.type) {
         case RECEIVE_BASKET:
-            ({totalPrice,
-                totalPriceWhithDiscount} = calculateTotalAndTotalDiscount(action.payload));
-            
-             quantity = action.payload.products.reduce((quantity, product) => {
+            ({
+                totalPrice,
+                totalPriceWhithDiscount
+            } = calculateTotalAndTotalDiscount(action.payload));
+
+            quantity = action.payload.products.reduce((quantity, product) => {
                 return quantity + product.quantity
-            }, 0); 
+            }, 0);
 
-             return {...state,
-                 products: action.payload.products,
-                 totalPrice,
-                 totalPriceWhithDiscount,
-                 discountMoney: action.payload.discountMoney,
-                 discountPercent: action.payload.discountPercent,
-                 quantity
-             };
+            return {
+                ...state,
+                products: action.payload.products,
+                totalPrice,
+                totalPriceWhithDiscount,
+                discountMoney: action.payload.discountMoney,
+                discountPercent: action.payload.discountPercent,
+                quantity
+            };
 
-        case  RECEIVE_BASKET_EXTENDED:
-               ({totalPrice,
-                    totalPriceWhithDiscount} = calculateTotalAndTotalDiscount(action.payload));
-                
-                quantity = action.payload.products.reduce((quantity, product) => {
-                    return quantity + product.quantity
-                }, 0); 
-    
-                 return {
-                    ...state,
-                     products: action.payload.products,
-                     totalPrice,
-                     totalPriceWhithDiscount,
-                     discountMoney: action.payload.discountMoney,
-                     discountPercent: action.payload.discountPercent,
-                     quantity,
-                     productsDetails: action.payload.productsDetails,
-                 };
-                
+        case RECEIVE_BASKET_EXTENDED:
+            ({
+                totalPrice,
+                totalPriceWhithDiscount
+            } = calculateTotalAndTotalDiscount(action.payload));
+
+            quantity = action.payload.products.reduce((quantity, product) => {
+                return quantity + product.quantity
+            }, 0);
+
+            return {
+                ...state,
+                products: action.payload.products,
+                totalPrice,
+                totalPriceWhithDiscount,
+                discountMoney: action.payload.discountMoney,
+                discountPercent: action.payload.discountPercent,
+                quantity,
+                productsDetails: action.payload.productsDetails,
+            };
+
+        case RECEIVE_ORDER:
+            return initialState;
 
         default:
-            return state;            
+            return state;
     }
 }

@@ -8,7 +8,7 @@ const mongoSessionStore = require('connect-mongo');
 const helmet = require('helmet');
 require('dotenv').config();
 const api = require('./api');
-//const auth = require('./googleAuth');
+const auth = require('./googleAuth');
 const config = require('./config');
 const getRootUrl = require('../lib/getRootUrl');
 const path = require('path');
@@ -78,19 +78,24 @@ app.prepare().then(async () => {
 
     // Then pass them to cors:
     server.use(cors(corsOptions));
-    api(server);
+    
 
-    //auth({ server, ROOT_URL });    
+    auth({ server, ROOT_URL }); 
+    api(server);
+    
+    server.get('/login', (req, res) => {
+         app.render(req, res, '/login');
+     });
+
+     server.get('/profile', (req, res) => {
+        app.render(req, res, '/profile');
+    });
+
     // 
 
 
-    /* server.get('/profile', (req, res) => {
-         app.render(req, res, '/profile');
-     });
- 
-     server.get('/login', (req, res) => {
-         app.render(req, res, '/login');
-     });
+    /* 
+     
  
      server.get('/post/edit/:postId', (req, res) => {
          const { postId } = req.params;

@@ -8,8 +8,9 @@ router.get('/', async (req, res) => {
 
   if (req.session.basketId) {
     try {
+      
       let basket = await Basket.findById(req.session.basketId);
-      //basket = basket.toObject();       
+         
       if (req.query.withProductDetail) {
         let productIds = basket.products.map((product) => {
           return product.productId.toString();
@@ -42,6 +43,7 @@ router.get('/', async (req, res) => {
   res.status(400).json({
     status: 'error'
   });
+  
 });
 
 
@@ -237,5 +239,59 @@ router.post('/remove_product', async (req, res) => {
     });
   }
 });
+
+router.post('/change_product_quantity', async (req, res) => {
+  try {
+    console.log(typeof req.body.quantity);
+    if(! req.body.quantity){
+      res.status(400).json({
+        status: 'error'
+      });
+      return;
+    }
+
+    let basket = await Basket.findById(req.session.basketId);
+
+    if (basket) {
+      let updated = false;
+
+      basket.products.forEach((currentProduct) => {
+
+        if (currentProduct.productId.toString() === req.body.productId) {
+          currentProduct.quantity = req.body.quantity;
+          updated = true;
+        }
+      });
+
+      if (updated) {
+        let updatedBasket = await Basket.updateProducts({
+          userId: req.user && req.user.id ? req.user.id : null,
+          products: basket.products,
+          id: req.session.basketId
+        });
+
+        if (updatedBasket) {
+          res.status(200).json({
+            status: 'success',
+            basket: updatedBasket
+          });
+
+          return;
+        }
+      }
+    }
+
+    res.status(400).json({
+      status: 'error'
+    });
+
+  } catch (err) {
+    res.status(400).json({
+      status: 'error'
+    });
+  }
+});
+
+
 
 module.exports = router;

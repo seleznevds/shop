@@ -1,5 +1,6 @@
 import BasketViget from './BasketVidget';
 import styled from 'styled-components';
+import Link from 'next/link';
 
 let BasketContaner = styled.div`
     float:right;
@@ -31,11 +32,10 @@ class Header extends React.Component {
                     <NavButtonContaner>
                         <a href="#" data-target="slide-out" className="sidenav-trigger hide-on-large-only"><i className="material-icons">menu</i></a>
                     </NavButtonContaner>
-                    <a href="#" className="brand-logo">Logo</a>
+                    <Link href="/" key={545}><a className="brand-logo">Logo</a></Link>
                     <BasketContaner><BasketViget /></BasketContaner>
                     <ul id="nav-mobile" className="right hide-on-med-and-down">
-                        <li><a href="sass.html">Sass</a></li>
-                        <li><a href="badges.html">Components</a></li>
+                        <li><Link href="/login" key={545}><a>Авторизация</a></Link></li>
                     </ul>
 
                 </div>
