@@ -1,9 +1,7 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import withLayout from '../../lib/withLayout';
+import withAuth from "../../lib/withAuth";
 import ProductForm from '../../components/ProductForm';
-
-
 
 class AddProduct extends React.Component {
   render () {
@@ -14,9 +12,4 @@ class AddProduct extends React.Component {
   }
 }
 
-const Component = connect(
-  null,
-  null
-)(AddProduct);
-
-export default withLayout(Component);
+export default withAuth(withLayout(AddProduct));

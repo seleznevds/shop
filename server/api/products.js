@@ -3,28 +3,28 @@ let router = express.Router();
 let Product = require('../models/Product');
 const uuidv4 = require('uuid/v4');
 const multer = require('multer');
-const aws = require('aws-sdk');
+
 const path = require('path');
 const fs = require('fs')
 const config = require('../config.js');
 const checkAuth = require('../../lib/checkAuthMiddleware');
 const crypto = require('crypto');
-
-
-aws.config.region = 'eu-west-3';
-
+const awsFileStorage = require('../../lib/multerAwsStorage');
 
 
 
-let storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(config.staticFolder, '/images/products'));
-  },
+
+
+
+
+let storage = awsFileStorage({
   filename: function (req, file, cb) {
     let extension = file.originalname.match(/\.[a-z]{1,4}$/i);
     cb(null, `${uuidv4()}${extension && extension.length ? extension[0] : ''}`);
 
-  }
+  },
+  bucket: process.env.S3_BUCKET,
+  region: 'eu-west-3' 
 });
 
 
@@ -46,7 +46,7 @@ let upload = multer({
 
 let uploadError = (err, req, res, next) => {
   if (err) {
-    console.log('product  create error');
+    console.log('product  create error', err);
     res.status(404).json({
       status: 'error',
       message: 'Некорректный файл. Используйте  изображения  в формате webp, png или  jpg, размером не более  512 kb'
@@ -60,148 +60,6 @@ let uploadError = (err, req, res, next) => {
 
 
 
-router.get('/sign-s3-new', async (req, res) => { 
-  
-  const S3_BUCKET = process.env.S3_BUCKET;
-  const CRYPTO_SALT = process.env.CRYPTO_SALT;
-  const s3 = new aws.S3();
-  
-  const fileType = req.query.type;
-
-  
-  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
-
-  const fileName = `${uuidv4()}${extension && extension.length ? extension[0] : ''}`;
-  
-console.log(fileType);
-  const s3Params =  {
-    Expires: 60,
-    Bucket: S3_BUCKET,
-    ACL: 'public-read',
-    Conditions: [
-      ["starts-with", "content-type", "image/"],
-      ["content-length-range", 100, 500000]], // 100Byte - 0.5MB
-    Fields: {
-      "Content-Type": fileType,
-       key: fileName
-    }
-  };
-  
-  s3.createPresignedPost(s3Params, (err, data) => {
-    if(err){
-      console.log(err);
-      res.status(404).json({
-        status: 'error',
-        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
-      });
-      return;
-    }
-    resolve(data);
-  });  
-  
-
-  s3.getSignedUrl('putObject', s3Params, (err, data) => {
-    if(err){
-      console.log(err);
-      res.status(404).json({
-        status: 'error',
-        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
-      });
-      return;
-    }
-
-    let url = `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`;
-
-    let hash = crypto.createHash('sha512');
-           
-    let imageHash = hash.update(url + CRYPTO_SALT, 'utf-8').digest('hex');
-    
-    const returnData = {
-      status: 'success',
-      signedRequest: data,
-      url,
-      imageHash
-    };
-
-    res.json(returnData);    
-  });
-});
-
-
-
-
-
-
-router.get('/sign-s3', async (req, res) => { 
-  
-  const S3_BUCKET = process.env.S3_BUCKET;
-  const CRYPTO_SALT = process.env.CRYPTO_SALT;
-  const s3 = new aws.S3();
-  
-  const fileType = req.query.type;
-
-  /*if (!['image/jpeg', 'image/pjpeg', 'image/png', 'image/webp'].includes(fileType)) {
-    res.status(404).json({
-      status: 'error',
-      message: 'Некорректный файл. Используйте  изображения  в формате webp, png или  jpg, размером не более  512 kb'
-    });
-
-    return;
-  }
-
-
-  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
-
-  if (! extension || ! extension.length  || !['.jpeg', '.pjpeg', '.png', '.webp', '.jpg'].includes(extension[0])) {
-    res.status(404).json({
-      status: 'error',
-      message: 'Некорректный файл. Используйте  изображения  в формате webp, png или  jpg, размером не более  512 kb'
-    });
-
-    return;
-  }*/
-  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
-
-  const fileName = `${uuidv4()}${extension && extension.length ? extension[0] : ''}`;
-  
-console.log(fileType);
-  const s3Params = {
-    Bucket: S3_BUCKET,
-    Key: fileName,
-    Expires: 60,
-    ContentType: fileType,
-    ACL: 'public-read'
-  };
-
-  s3.getSignedUrl('putObject', s3Params, (err, data) => {
-    if(err){
-      console.log(err);
-      res.status(404).json({
-        status: 'error',
-        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
-      });
-      return;
-    }
-
-    let url = `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`;
-
-    let hash = crypto.createHash('sha512');
-           
-    let imageHash = hash.update(url + CRYPTO_SALT, 'utf-8').digest('hex');
-    
-    const returnData = {
-      status: 'success',
-      signedRequest: data,
-      url,
-      imageHash
-    };
-
-    res.json(returnData);    
-  });
-});
-
-
-
 router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
   let title = req.body && req.body.title ? req.body.title.trim() : '';
   let description = req.body && req.body.description ? req.body.description.trim() : '';
@@ -210,9 +68,7 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
 
   if (!title || !description || !price) {
     if (req.file && req.file.path) {
-      fs.unlink(req.file.path, () => {
-
-      });
+      //todo del files from storage
     }
 
     res.status(404).json({
@@ -224,9 +80,9 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
   }
 
   try {
-    
-    
-    let images =  req.file && req.file.filename ? [`/images/products/${req.file.filename}`] : [];
+
+
+    let images = req.file && req.file.destination ? [req.file.destination] : [];
 
     let product = await Product.add({
       title,
@@ -245,7 +101,7 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
   } catch (err) {
     console.log(err);
     if (req.file && req.file.path) {
-      fs.unlink(req.file.path, () => { });
+      
     }
 
     res.status(404).json({
@@ -262,11 +118,9 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
   let id = req.body && req.body.id;
   let price = req.body && req.body.price ? req.body.price.trim() : undefined;
 
-  if (!id || !title || !description  || !price) {
+  if (!id || !title || !description || !price) {
     if (req.file && req.file.path) {
-      fs.unlink(req.file.path, () => {
-
-      });
+      
     }
 
     res.status(404).json({
@@ -279,7 +133,7 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
 
   let product;
   try {
-    product = await Product.findOne({ _id: id, userId: req.user.id });
+    product = await Product.findById(id);
     if (!product) {
       res.status(400).json({ status: 'error', message: 'продукт не найден, либо  доступ запрещен' });
       return;
@@ -297,29 +151,28 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
     price: price
   };
 
-  if (req.file && req.file.filename) {
-    modifier.image = [`/images/products/${req.file.filename}`];
+  
+  if (req.file && req.file.destination) {
+    modifier.images = [req.file.destination];
   }
 
   try {
     await Product.updateOne({ _id: id }, { $set: modifier });
-    
+
     if (product.image && req.file && req.file.path) {  // если  все ок, то удаляем старое изображение
-      fs.unlink(path.join(config.staticFolder, product.image), () => {});
+      
     }
 
     res.status(200).json({
       status: 'success', message: 'продукт обновлен!',
-      image: req.file && req.file.filename ? `/images/products/${req.file.filename}` : null
+      image: req.file && req.file.destination ? req.file && req.file.destination : null
     });
 
     return;
-    
+
   } catch (err) {
     if (req.file && req.file.path) {
-      fs.unlink(req.file.path, () => {//если не обновили, то удаляем новое  загруженное изображение
-
-      });
+     
       res.status(400).json({ status: 'error', message: 'Неизвестная ошибка. Попробуйте  поторить через некоторое время' });
       return;
     }
@@ -332,7 +185,7 @@ router.get('/:id', async (req, res) => {
     res.status(400).json({ status: 'error', message: 'Идентификатор продукта не указан' });
   }
 
-  let product ;
+  let product;
   try {
     product = await Product.findById(req.params.id);
     if (!product) {
@@ -348,11 +201,6 @@ router.get('/:id', async (req, res) => {
 });
 
 
-
-
-
-
-
 router.get('/', async (req, res) => {
   let limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
   limit = isNaN(limit) ? 10 : limit;
@@ -361,7 +209,7 @@ router.get('/', async (req, res) => {
   offset = isNaN(offset) ? 0 : offset;
 
   try {
-    let { products, productsQuantity } = await Product.list({ offset, limit });  
+    let { products, productsQuantity } = await Product.list({ offset, limit });
     res.json({ products, productsQuantity });
   } catch (err) {
     console.log(err);

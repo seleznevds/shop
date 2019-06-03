@@ -58,7 +58,7 @@ class ProductForm extends Component {
             this.state.fields.title = props.product.title || '';
             this.state.fields.description = props.product.description || '';
             this.state.fields.price = props.product.price || '';
-            this.state.fields.images = props.product.images || '';
+            this.state.fields.image = props.product.images && props.product.images[0] || '';
         }
 
         this.form = React.createRef();
@@ -161,55 +161,15 @@ class ProductForm extends Component {
     };
 
 
-    fileChangeHandler = (event) => {   
-        let imageUrl;    
-        if(event.target.files.length > 0){
-            let file = event.target.files[0];
-            productsApi.getSignedRequest({
-                name: file.name,
-                type: file.type
-            }).then(({signedRequest, url, imageHash, status, message}) => {
-                if (status === 'success') {
-                    console.log(signedRequest, url, imageHash);
-                    imageUrl = url;
-                    this.setState({
-                        fields: {
-                            ...this.state.fields,
-                            ["imageHash"]: imageHash
-                        }
-                    });
 
-                    return productsApi.uploadFile({signedRequest, file});
-                } else{
-                    this.setState({
-                        status: 'error',
-                        errorText: message || 'Ошибка',
-                        successText: ''
-                    });
 
-                    return false;
-                }                
-            }).then((uploaded) => {
-                if(uploaded && imageUrl){
-                    this.setState({
-                        fields: {
-                            ...this.state.fields,
-                            ["image"]: imageUrl
-                        }
-                    });
-                }
-            }).catch((err) => {
-                console.log(err);
-            });
-        }
-    }
-
+    
     render() {
         return (
             <>
 
                 
-                <form encType="multipart/form-data"  ref={this.form} >
+                <form encType="multipart/form-data"  ref={this.form}  onSubmit={this.onSubmitHandler}>
 
                     <div className="row">
                         <div className="input-field col s8">
@@ -232,18 +192,16 @@ class ProductForm extends Component {
                         </div>
                     </div>
 
-                    <input type="hidden" name="image_src" value={this.state.fields.image} />
-                    <input type="hidden" name="image_hash" value={this.state.fields.imageHash} />
 
                     
 
                     {this.props.product && this.props.product.id ? <input type="hidden" name="id" value={this.props.product.id} /> : null}
-                </form>
-                <div className="row">
+
+                    <div className="row">
                     <div className="file-field input-field col s8">
                         <div className="btn">
                             <span>File</span>
-                            <input name="image" type="file" onChange={this.fileChangeHandler} />
+                            <input name="image" type="file" />
                         </div>
                         <div className="file-path-wrapper ">
                             <input className="file-path validate" type="text" />
@@ -263,7 +221,7 @@ class ProductForm extends Component {
                                 <Preloader /> :
                                 <>
                                     {this.state.status === 'success' && !this.props.product ? null :
-                                        <button className="btn waves-effect waves-light"  name="action" onClick={this.onSubmitHandler}>Submit
+                                        <button className="btn waves-effect waves-light"  name="action" >Submit
                                     <i className="material-icons right">send</i>
                                         </button>
                                     }
@@ -273,6 +231,10 @@ class ProductForm extends Component {
                             }
                         </div>
                     </div>        
+
+
+                </form>
+                
 
             </>
         );

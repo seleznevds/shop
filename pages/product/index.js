@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import withLayout from '../../lib/withLayout';
 import {  recieveProductDetail } from '../../actions/products';
 import Product from '../../components/Product';
@@ -57,23 +56,5 @@ class ProductDetail extends React.Component {
     }
 }
 
-const mapStateToProps = (state, ownProps) => {
-    let { productId } = ownProps;
-    let product = state.products.productsDetailList.find((product) => {
-        if(product.id === productId){
-            return true;
-        }       
-    });
 
-    return {product};
-};
-
-
-
-
-const Component = connect(
-    null,
-    null
-)(ProductDetail);
-
-export default withLayout(Component);
+export default withLayout(ProductDetail);

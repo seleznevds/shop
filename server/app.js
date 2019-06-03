@@ -116,6 +116,11 @@ app.prepare().then(async () => {
     server.get('/admin/add-products', (req, res) => {
         app.render(req, res, '/admin/add-product');
     });
+
+    server.get('/admin/edit-product/:productId', (req, res) => {
+        const { productId } = req.params;
+        app.render(req, res, '/admin/edit-product', { productId });
+    });
    
 
 
