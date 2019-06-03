@@ -3,24 +3,18 @@ let router = express.Router();
 let Product = require('../models/Product');
 const uuidv4 = require('uuid/v4');
 const multer = require('multer');
+const aws = require('aws-sdk');
 const path = require('path');
 const fs = require('fs')
 const config = require('../config.js');
+const checkAuth = require('../../lib/checkAuthMiddleware');
+const crypto = require('crypto');
 
 
-let checkAuth = (req, res, next) => {
-  next();
-  return; //TODO  switch on  authorization
-  if (!req.user || !req.user.id) {
-    res.status(401).json({
-      status: 'error',
-      message: 'Unauthorized user.'
-    });
-    return;
-  }
+aws.config.region = 'eu-west-3';
 
 
-};
+
 
 let storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -63,6 +57,149 @@ let uploadError = (err, req, res, next) => {
 
   next();
 }
+
+
+
+router.get('/sign-s3-new', async (req, res) => { 
+  
+  const S3_BUCKET = process.env.S3_BUCKET;
+  const CRYPTO_SALT = process.env.CRYPTO_SALT;
+  const s3 = new aws.S3();
+  
+  const fileType = req.query.type;
+
+  
+  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
+
+  const fileName = `${uuidv4()}${extension && extension.length ? extension[0] : ''}`;
+  
+console.log(fileType);
+  const s3Params =  {
+    Expires: 60,
+    Bucket: S3_BUCKET,
+    ACL: 'public-read',
+    Conditions: [
+      ["starts-with", "content-type", "image/"],
+      ["content-length-range", 100, 500000]], // 100Byte - 0.5MB
+    Fields: {
+      "Content-Type": fileType,
+       key: fileName
+    }
+  };
+  
+  s3.createPresignedPost(s3Params, (err, data) => {
+    if(err){
+      console.log(err);
+      res.status(404).json({
+        status: 'error',
+        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
+      });
+      return;
+    }
+    resolve(data);
+  });  
+  
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if(err){
+      console.log(err);
+      res.status(404).json({
+        status: 'error',
+        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
+      });
+      return;
+    }
+
+    let url = `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`;
+
+    let hash = crypto.createHash('sha512');
+           
+    let imageHash = hash.update(url + CRYPTO_SALT, 'utf-8').digest('hex');
+    
+    const returnData = {
+      status: 'success',
+      signedRequest: data,
+      url,
+      imageHash
+    };
+
+    res.json(returnData);    
+  });
+});
+
+
+
+
+
+
+router.get('/sign-s3', async (req, res) => { 
+  
+  const S3_BUCKET = process.env.S3_BUCKET;
+  const CRYPTO_SALT = process.env.CRYPTO_SALT;
+  const s3 = new aws.S3();
+  
+  const fileType = req.query.type;
+
+  /*if (!['image/jpeg', 'image/pjpeg', 'image/png', 'image/webp'].includes(fileType)) {
+    res.status(404).json({
+      status: 'error',
+      message: 'Некорректный файл. Используйте  изображения  в формате webp, png или  jpg, размером не более  512 kb'
+    });
+
+    return;
+  }
+
+
+  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
+
+  if (! extension || ! extension.length  || !['.jpeg', '.pjpeg', '.png', '.webp', '.jpg'].includes(extension[0])) {
+    res.status(404).json({
+      status: 'error',
+      message: 'Некорректный файл. Используйте  изображения  в формате webp, png или  jpg, размером не более  512 kb'
+    });
+
+    return;
+  }*/
+  let extension =  req.query.name.match(/\.[a-z]{1,4}$/i);
+
+  const fileName = `${uuidv4()}${extension && extension.length ? extension[0] : ''}`;
+  
+console.log(fileType);
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: fileName,
+    Expires: 60,
+    ContentType: fileType,
+    ACL: 'public-read'
+  };
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if(err){
+      console.log(err);
+      res.status(404).json({
+        status: 'error',
+        message: 'Ошибка  при загрузке  файла.  Попробуйте повторить  через некоторое время.'
+      });
+      return;
+    }
+
+    let url = `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`;
+
+    let hash = crypto.createHash('sha512');
+           
+    let imageHash = hash.update(url + CRYPTO_SALT, 'utf-8').digest('hex');
+    
+    const returnData = {
+      status: 'success',
+      signedRequest: data,
+      url,
+      imageHash
+    };
+
+    res.json(returnData);    
+  });
+});
+
 
 
 router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
@@ -209,6 +346,8 @@ router.get('/:id', async (req, res) => {
 
   res.send({ product });
 });
+
+
 
 
 
