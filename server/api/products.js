@@ -3,18 +3,14 @@ let router = express.Router();
 let Product = require('../models/Product');
 const uuidv4 = require('uuid/v4');
 const multer = require('multer');
-
 const path = require('path');
 const fs = require('fs')
 const config = require('../config.js');
 const checkAuth = require('../../lib/checkAuthMiddleware');
 const crypto = require('crypto');
 const awsFileStorage = require('../../lib/multerAwsStorage');
-
-
-
-
-
+const awsObj = require('../../lib/awsS3');
+const deleteFileFromAws = awsObj.deleteFileFromAws;
 
 
 let storage = awsFileStorage({
@@ -22,9 +18,7 @@ let storage = awsFileStorage({
     let extension = file.originalname.match(/\.[a-z]{1,4}$/i);
     cb(null, `${uuidv4()}${extension && extension.length ? extension[0] : ''}`);
 
-  },
-  bucket: process.env.S3_BUCKET,
-  region: 'eu-west-3' 
+  }
 });
 
 
@@ -58,8 +52,6 @@ let uploadError = (err, req, res, next) => {
   next();
 }
 
-
-
 router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
   let title = req.body && req.body.title ? req.body.title.trim() : '';
   let description = req.body && req.body.description ? req.body.description.trim() : '';
@@ -67,8 +59,8 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
 
 
   if (!title || !description || !price) {
-    if (req.file && req.file.path) {
-      //todo del files from storage
+    if (req.file && req.file.filename) {
+      deleteFileFromAws(req.file.filename); //удаляем  загруженный файл ,  если  поля  не заполнены
     }
 
     res.status(404).json({
@@ -80,8 +72,6 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
   }
 
   try {
-
-
     let images = req.file && req.file.destination ? [req.file.destination] : [];
 
     let product = await Product.add({
@@ -100,8 +90,8 @@ router.post('/create', checkAuth, upload, uploadError, async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    if (req.file && req.file.path) {
-      
+    if (req.file && req.file.filename) {
+      deleteFileFromAws(req.file.filename);
     }
 
     res.status(404).json({
@@ -119,8 +109,8 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
   let price = req.body && req.body.price ? req.body.price.trim() : undefined;
 
   if (!id || !title || !description || !price) {
-    if (req.file && req.file.path) {
-      
+    if (req.file && req.file.filename) {
+      deleteFileFromAws(req.file.filename);
     }
 
     res.status(404).json({
@@ -151,7 +141,7 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
     price: price
   };
 
-  
+
   if (req.file && req.file.destination) {
     modifier.images = [req.file.destination];
   }
@@ -159,8 +149,12 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
   try {
     await Product.updateOne({ _id: id }, { $set: modifier });
 
-    if (product.image && req.file && req.file.path) {  // если  все ок, то удаляем старое изображение
-      
+    if (product.images && product.images.length && req.file && req.file.filename) {  // если  все ок, то удаляем старое изображение
+      let filename = product.images[0].match(/\/([^/]+$)/);//выделяем название изображения из  полного  адреса
+
+      if (filename && filename[1]) {
+        deleteFileFromAws(filename[1]);
+      }
     }
 
     res.status(200).json({
@@ -171,11 +165,15 @@ router.post('/edit', checkAuth, upload, uploadError, async (req, res) => {
     return;
 
   } catch (err) {
-    if (req.file && req.file.path) {
-     
-      res.status(400).json({ status: 'error', message: 'Неизвестная ошибка. Попробуйте  поторить через некоторое время' });
-      return;
+    if (req.file && req.file.filename) {
+      deleteFileFromAws(req.file.filename);
     }
+
+    res.status(400).json({
+      status: 'error',
+      message: 'Неизвестная ошибка. Попробуйте  поторить через некоторое время'
+    });
+    return;
   }
 });
 

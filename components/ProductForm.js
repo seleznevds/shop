@@ -19,8 +19,7 @@ const ErrorMessage = styled.span`
 
 const StyledImagecontaner = styled.div`
   font-size:1rem;
-  margin: 10px 0;
-  
+  margin: 10px 0;  
   max-width: 200px;
   max-heigth:200px;
   overflow: hidden;
@@ -166,9 +165,7 @@ class ProductForm extends Component {
     
     render() {
         return (
-            <>
-
-                
+            <>                
                 <form encType="multipart/form-data"  ref={this.form}  onSubmit={this.onSubmitHandler}>
 
                     <div className="row">
@@ -190,10 +187,7 @@ class ProductForm extends Component {
                             <StyledTextarea id="product_description_input" className="materialize-textarea" invalid={this.state.descriptionInvalid ? 1 : 0}
                                 name="description" onChange={this.onChangeHandler} value={this.state.fields.description} />
                         </div>
-                    </div>
-
-
-                    
+                    </div>                    
 
                     {this.props.product && this.props.product.id ? <input type="hidden" name="id" value={this.props.product.id} /> : null}
 
@@ -230,17 +224,11 @@ class ProductForm extends Component {
                                 </>
                             }
                         </div>
-                    </div>        
-
-
+                    </div> 
                 </form>
-                
-
             </>
         );
     }
-
-
 }
 
 export default ProductForm;
