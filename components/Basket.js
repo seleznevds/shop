@@ -55,6 +55,9 @@ class Basket extends React.Component {
             <div className="col s3">{convertToRublesFromCents(this.props.totalPriceWhithDiscount)} руб.</div>
         </div>
 
+        let error = this.props.error ? <div  className="error">{this.props.error.message ? this.props.error.message : this.props.error.toString()}</div> : null;
+
+
 
         return <div className="collection">
             <div className="row">
@@ -77,7 +80,7 @@ class Basket extends React.Component {
             <a className="waves-effect waves-light btn" onClick={this.props.createOrder}>
                 <i className="material-icons left">add_box</i>Оформить  заказ
             </a>
-
+            {error}
         </div>;
     }
 }
@@ -102,7 +105,8 @@ const mapStateToProps = (state) => {
         totalPriceWhithDiscount: state.basket.totalPriceWhithDiscount,
         totalPrice: state.basket.totalPrice,
         discount: state.basket.discountMoney || state.basket.discountPercent,
-        discountMeasure: state.basket.discountMoney ? 'руб.' : (state.basket.discountPercent ? '%' : '')
+        discountMeasure: state.basket.discountMoney ? 'руб.' : (state.basket.discountPercent ? '%' : ''),
+        error: state.basket.error
     };
 };
 

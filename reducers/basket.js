@@ -1,4 +1,4 @@
-import { RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED, RECEIVE_ORDER } from '../actions/actionConstants';
+import { RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED, RECEIVE_ORDER, CREATE_ORDER_ERROR_OCCURED  } from '../actions/actionConstants';
 
 const calculateTotalAndTotalDiscount = ({ products,
     discountPercent,
@@ -35,7 +35,8 @@ let initialState = {
     totalPriceWhithDiscount: 0,
     discountPercent: 0,
     discountMoney: 0,
-    quantity: 0
+    quantity: 0,
+    error: null
 };
 
 export default (state = initialState, action) => {
@@ -79,6 +80,12 @@ export default (state = initialState, action) => {
                 discountPercent: action.payload.discountPercent,
                 quantity,
                 productsDetails: action.payload.productsDetails,
+            };
+        
+        case CREATE_ORDER_ERROR_OCCURED:
+            return {
+                ...state,
+                error: action.payload.error
             };
 
         case RECEIVE_ORDER:

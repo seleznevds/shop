@@ -1,4 +1,6 @@
-import { RECEIVE_BASKET, REMOVE_FROM_BASKET,  ADD_TO_BASKET, RECEIVE_BASKET_EXTENDED, CHANGE_PRODUCT_QUANTITY, CREATE_ORDER, RECEIVE_ORDER } from './actionConstants'
+import { RECEIVE_BASKET, REMOVE_FROM_BASKET,  ADD_TO_BASKET,
+     RECEIVE_BASKET_EXTENDED, CHANGE_PRODUCT_QUANTITY, CREATE_ORDER,
+      RECEIVE_ORDER, CREATE_ORDER_ERROR_OCCURED  } from './actionConstants'
 
 export const recieveBasket = ({
     products,
@@ -86,3 +88,18 @@ export const receiveOrder = (order) => {
         }
     }
 }
+
+
+export const showOrderError = (error) => {
+       
+    return {
+        type: CREATE_ORDER_ERROR_OCCURED,
+        payload: {
+            error
+        }
+    }
+}
+
+
+
+

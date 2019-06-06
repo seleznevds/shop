@@ -1,5 +1,5 @@
 import { ADD_TO_BASKET, RECEIVE_BASKET, REMOVE_FROM_BASKET, CHANGE_PRODUCT_QUANTITY, CREATE_ORDER} from '../actions/actionConstants';
-import { addToBasket, removeFromBasket, recieveBasket, receiveOrder} from '../actions/basket';
+import { addToBasket, removeFromBasket, recieveBasket, receiveOrder, showOrderError} from '../actions/basket';
 import { basketApi } from '../lib/basket';
 
 export default ({ dispatch }) => next => action => {
@@ -49,6 +49,7 @@ export default ({ dispatch }) => next => action => {
                     console.log(order);
                 }
             }).catch((err) => {
+                dispatch(showOrderError(err));
                 console.log(err);
             });
             return;
