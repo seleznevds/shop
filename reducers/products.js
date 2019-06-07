@@ -1,4 +1,4 @@
-import { RECEIVE_PRODUCTS, RECEIVE_PRODUCT_DETAIL } from '../actions/actionConstants';
+import { RECEIVE_PRODUCTS, RECEIVE_PRODUCT_DETAIL, LOADING_PROCESS_START, LOADING_PROCESS_COMPLETE } from '../actions/actionConstants';
 import { getUniqueCollectionByProp } from '../lib/utils';
 
 
@@ -6,8 +6,9 @@ import { getUniqueCollectionByProp } from '../lib/utils';
 
 export default (state = {
     productsList: [],
-    productsByPage:[],
-    productsDetailList: []
+    productsByPage: [],
+    productsDetailList: [], 
+    loading: false
 }, action) => {
     switch (action.type) {
 
@@ -19,6 +20,23 @@ export default (state = {
             let productsDetailList = getUniqueCollectionByProp([...state.productsDetailList, action.payload.product], 'id');
             return { ...state, productsDetailList };
 
+        case LOADING_PROCESS_START:
+            if (action.payload.resourceType === 'products') {
+                return {
+                    ...state,
+                    loading: true
+                }
+            }
+            return state;
+
+        case LOADING_PROCESS_COMPLETE:
+            if (action.payload.resourceType === 'products') {
+                return {
+                    ...state,
+                    loading: false
+                }
+            }
+            return state;
 
 
         default:

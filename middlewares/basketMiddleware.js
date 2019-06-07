@@ -1,5 +1,6 @@
-import { ADD_TO_BASKET, RECEIVE_BASKET, REMOVE_FROM_BASKET, CHANGE_PRODUCT_QUANTITY, CREATE_ORDER} from '../actions/actionConstants';
-import { addToBasket, removeFromBasket, recieveBasket, receiveOrder, showOrderError} from '../actions/basket';
+import { ADD_TO_BASKET, RECEIVE_BASKET, REMOVE_FROM_BASKET, CHANGE_PRODUCT_QUANTITY, CREATE_ORDER } from '../actions/actionConstants';
+import { recieveBasket, receiveOrder, showOrderError } from '../actions/basket';
+import { loadingProcessStart, loadingProcessComplete } from '../actions/preloader';
 import { basketApi } from '../lib/basket';
 
 export default ({ dispatch }) => next => action => {
@@ -8,6 +9,9 @@ export default ({ dispatch }) => next => action => {
 
     switch (action.type) {
         case ADD_TO_BASKET:
+
+            dispatch(loadingProcessStart({ resourceType: 'basket' }));
+
             basketApi.addProduct({
                 product: action.payload.product
             }).then((basket) => {
@@ -16,10 +20,15 @@ export default ({ dispatch }) => next => action => {
                 }
             }).catch((err) => {
                 console.log(err);
+            }).finally(() => {
+                dispatch(loadingProcessComplete({ resourceType: 'basket' }));
             });
             return;
 
+
         case REMOVE_FROM_BASKET:
+
+            dispatch(loadingProcessStart({ resourceType: 'basket' }));
             basketApi.removeProduct({
                 productId: action.payload.productId
             }).then((basket) => {
@@ -28,9 +37,14 @@ export default ({ dispatch }) => next => action => {
                 }
             }).catch((err) => {
                 console.log(err);
-            });
+            }).finally(() => {
+                dispatch(loadingProcessComplete({ resourceType: 'basket' }));
+            });;
             return;
+
         case CHANGE_PRODUCT_QUANTITY:
+            dispatch(loadingProcessStart({ resourceType: 'basket' }));
+
             basketApi.changeProductQuantity({
                 productId: action.payload.productId,
                 quantity: action.payload.quantity
@@ -40,9 +54,14 @@ export default ({ dispatch }) => next => action => {
                 }
             }).catch((err) => {
                 console.log(err);
-            });
+            }).finally(() => {
+                dispatch(loadingProcessComplete({ resourceType: 'basket' }));
+            });;
             return;
+
         case CREATE_ORDER:
+
+            dispatch(loadingProcessStart({ resourceType: 'basket' }));
             basketApi.createOrder().then((order) => {
                 if (order) {
                     dispatch(receiveOrder(order));
@@ -50,7 +69,9 @@ export default ({ dispatch }) => next => action => {
             }).catch((err) => {
                 dispatch(showOrderError(err));
                 console.log(err);
-            });
+            }).finally(() => {
+                dispatch(loadingProcessComplete({ resourceType: 'basket' }));
+            });;
             return;
     }
 };

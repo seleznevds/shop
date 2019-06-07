@@ -43,7 +43,7 @@ const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBaske
                 <CardContent className="card-content">
                     <p>{convertToRublesFromCents(product.price)} руб.</p>
                     <p>{product.description}</p>
-                    <p><br/>{button}</p>
+                    <br/>{button}
                                 
                     
                 </CardContent>
