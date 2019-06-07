@@ -78,35 +78,24 @@ app.prepare().then(async () => {
 
     // Then pass them to cors:
     server.use(cors(corsOptions));
-    
 
-    auth({ server, ROOT_URL }); 
+
+    auth({ server, ROOT_URL });
     api(server);
-    
-    server.get('/login', (req, res) => {
-         app.render(req, res, '/login');
-     });
 
-     server.get('/profile', (req, res) => {
+    server.get('/login', (req, res) => {
+        app.render(req, res, '/login');
+    });
+
+    server.get('/profile', (req, res) => {
         app.render(req, res, '/profile');
     });
 
-    // 
+    server.get('/product/list/:page', (req, res) => {
+        const { page } = req.params;
+        app.render(req, res, '/product/list', { page });
+    });
 
-
-    /* 
-     
- 
-     server.get('/post/edit/:postId', (req, res) => {
-         const { postId } = req.params;
-         app.render(req, res, '/post/edit', { postId });
-     });
- 
-     server.get('/post/create', (req, res) => {
-         app.render(req, res, '/post/create');
-     });
- 
-     */
 
     server.get('/product/:productId', (req, res) => {
         const { productId } = req.params;
@@ -121,9 +110,6 @@ app.prepare().then(async () => {
         const { productId } = req.params;
         app.render(req, res, '/admin/edit-product', { productId });
     });
-   
-
-
 
     server.get('*', (req, res) => {
         if (req.path) {

@@ -10,8 +10,17 @@ let Title = styled.span`
     background:gray;
 `;
 
-let Image = styled.div`
-    border-bottom: gray 1px solid;
+let ImageContaner = styled.div`
+    
+    max-height:250px;
+    overflow:hidden;
+    text-align:center;
+    max-width:400px;
+`;
+
+let CardContent = styled.div`
+    border-top: gray 1px solid;
+
 `;
 
 const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBasket }) => {
@@ -27,16 +36,17 @@ const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBaske
     return (
         <div className="col s10 m5">
             <div className="card">
-                <Image className="card-image">
+                <ImageContaner className="card-image">
                     <Link as={`/product/${product.id}`} href={`/product?productId=${product.id}`}><a>{image}</a></Link>
                     <Link as={`/product/${product.id}`} href={`/product?productId=${product.id}`}><a><Title className="card-title">{product.title}</Title></a></Link>
-                </Image>
-                <div className="card-content">
+                </ImageContaner>
+                <CardContent className="card-content">
                     <p>{convertToRublesFromCents(product.price)} руб.</p>
                     <p>{product.description}</p>
-                    {button}             
+                    <p><br/>{button}</p>
+                                
                     
-                </div>
+                </CardContent>
             </div>
         </div>
     );

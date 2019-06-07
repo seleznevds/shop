@@ -32,7 +32,7 @@ class Header extends React.Component {
                     <NavButtonContaner>
                         <a href="#" data-target="slide-out" className="sidenav-trigger hide-on-large-only"><i className="material-icons">menu</i></a>
                     </NavButtonContaner>
-                    <Link href="/" key={545}><a className="brand-logo">Logo</a></Link>
+                    <Link href="/" key={545}><a className="brand-logo">Shop</a></Link>
                     <BasketContaner><BasketViget /></BasketContaner>
                     <ul id="nav-mobile" className="right hide-on-med-and-down">
                         <li><Link href="/login" key={545}><a>Авторизация</a></Link></li>

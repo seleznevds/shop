@@ -242,7 +242,7 @@ router.post('/remove_product', async (req, res) => {
 
 router.post('/change_product_quantity', async (req, res) => {
   try {
-    console.log(typeof req.body.quantity);
+    
     if(! req.body.quantity){
       res.status(400).json({
         status: 'error'

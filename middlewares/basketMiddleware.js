@@ -46,7 +46,6 @@ export default ({ dispatch }) => next => action => {
             basketApi.createOrder().then((order) => {
                 if (order) {
                     dispatch(receiveOrder(order));
-                    console.log(order);
                 }
             }).catch((err) => {
                 dispatch(showOrderError(err));

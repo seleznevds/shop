@@ -1,9 +1,10 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import withLayout from '../lib/withLayout';
-import { requestProducts, recieveProducts } from '../actions/products';
-import Product from '../components/Product';
+import { recieveProducts } from '../actions/products';
+import { recievePaginationProductsQuantity } from '../actions/pagination';
 import { productsApi } from '../lib/products';
+import ProductList from '../components/ProductList';
+import Pagination from '../components/Pagination';
 
 
 
@@ -11,37 +12,24 @@ import { productsApi } from '../lib/products';
 
 class Index extends React.Component {
   static async getInitialProps({ reduxStore }) {
-    
-   if(reduxStore.getState().products && reduxStore.getState().products.productsPreviewList &&
-   reduxStore.getState().products.productsPreviewList.length){
-     return {};
-   }
-    
-    try{
-      let { products, productsQuantity } = await productsApi.getList();
 
+    try {
+      let { products, productsQuantity } = await productsApi.getList();
+      reduxStore.dispatch(recievePaginationProductsQuantity(productsQuantity));
       reduxStore.dispatch(recieveProducts({ products }));
+
     } finally {
       return {};
-    }    
-  }  
+    }
+  }
 
   render() {
-    return <div className="row">
-      {this.props.products.map((product) => <Product key={product.id} product={product} />)}
-    </div>;
+    return  <>
+      <Pagination/>
+      <ProductList/>
+      <Pagination/>
+    </>;   
   }
 }
 
-const mapStateToProps = (state, ownProps) => ({
-  products: state.products.productsPreviewList
-});
-
-
-
-const Component = connect(
-  mapStateToProps,
-  null
-)(Index);
-
-export default withLayout(Component);
+export default withLayout(Index);

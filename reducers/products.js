@@ -5,14 +5,15 @@ import { getUniqueCollectionByProp } from '../lib/utils';
 
 
 export default (state = {
-    productsPreviewList: [],
+    productsList: [],
+    productsByPage:[],
     productsDetailList: []
 }, action) => {
     switch (action.type) {
 
         case RECEIVE_PRODUCTS:
-            let productsPreviewList = getUniqueCollectionByProp([...state.productsPreviewList, ...action.payload.products], 'id');
-            return { ...state, productsPreviewList };
+            let productsList = action.payload.products;
+            return { ...state, productsList };
 
         case RECEIVE_PRODUCT_DETAIL:
             let productsDetailList = getUniqueCollectionByProp([...state.productsDetailList, action.payload.product], 'id');
