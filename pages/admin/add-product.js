@@ -12,4 +12,4 @@ class AddProduct extends React.Component {
   }
 }
 
-export default withAuth(withLayout(AddProduct));
+export default withAuth(withLayout(AddProduct),  { adminRequired:true });

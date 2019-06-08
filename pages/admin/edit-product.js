@@ -41,4 +41,4 @@ class EditProduct extends Component {
 
 }
 
-export default withAuth(withLayout(EditProduct));
+export default withAuth(withLayout(EditProduct), { adminRequired:true });
