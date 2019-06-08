@@ -1,19 +1,19 @@
 import {LOADING_PROCESS_START, LOADING_PROCESS_COMPLETE} from './actionConstants';
 
-export const loadingProcessStart = ({resourceType}) => {
+export const loadingProcessStart = (data) => {
     return {
         type: LOADING_PROCESS_START,
         payload: {
-            resourceType
+            ...data
         }
     }
 }
 
-export const loadingProcessComplete = ({resourceType}) => {
+export const loadingProcessComplete = (data) => {
     return {
         type: LOADING_PROCESS_COMPLETE,
         payload: {
-            resourceType
+            ...data
         }
     }
 }

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { convertToRublesFromCents } from '../lib/utils';
 import { connect } from 'react-redux';
 import { addToBasket, removeFromBasket } from '../actions/basket';
+import Preloader from './Preloader';
 
 
 let Title = styled.span`
@@ -20,18 +21,25 @@ let ImageContaner = styled.div`
 
 let CardContent = styled.div`
     border-top: gray 1px solid;
-
 `;
 
-const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBasket }) => {
+let ButtonContaner = styled.div`
+    margin:10px 0;
+    height:50px;`;
+
+const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBasket, showPreloader}) => {
     let image = product.images.length ? <img src={product.images[0]} className="responsive-img" /> : null;
-    let button = inBasket ?
+    
+    
+    
+    let button = showPreloader ? <Preloader/> :
+     (inBasket ?
      <p><a className="waves-effect waves-light btn" onClick={removeFromBasketHandler}>
          <i className="material-icons left">remove_shopping_cart</i>Убрать  из  корзины
          </a></p> :
      <p><a className="waves-effect waves-light btn" onClick={addToBasketHandler}>
          <i className="material-icons left">add_shopping_cart</i>Купить
-         </a></p>;
+     </a></p>);
     
     return (
         <div className="col s10 m5">
@@ -43,9 +51,7 @@ const Product = ({ product, addToBasketHandler, removeFromBasketHandler, inBaske
                 <CardContent className="card-content">
                     <p>{convertToRublesFromCents(product.price)} руб.</p>
                     <p>{product.description}</p>
-                    <br/>{button}
-                                
-                    
+                    <ButtonContaner>{button}</ButtonContaner>                    
                 </CardContent>
             </div>
         </div>
@@ -58,8 +64,15 @@ function mapStateToProps(state, ownProps) {
     let inBasket = state.basket.products.find((product) => {
         return product.productId.toString() === productId;
     });
+
+    let showPreloader = false;
+    if(state.preloader && state.preloader.basket && state.preloader.basket[productId]){
+        showPreloader = true;
+    }
+
+
     
-    return { inBasket }
+    return { inBasket, showPreloader };
 }
 
 

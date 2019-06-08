@@ -59,7 +59,6 @@ router.post('/', checkAuthMiddleware, async (req, res) => {
             });
             
            delete req.session.basketId;
-           console.log('test', req.session.basketId )
             res.status(200).json({
                 status: 'success',
                 order

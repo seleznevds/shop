@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { connect } from 'react-redux';
 import { convertToRublesFromCents } from '../lib/utils';
 import { removeFromBasket, changeProductQuantity, createOrder} from '../actions/basket';
+import Preloader from './Preloader';
 
 
 let Image = styled.img`
@@ -18,6 +19,24 @@ text-align:center;`;
 let Bold = styled.span`
 font-size:1.2rem;
 font-weight:600;`;
+
+let PreloaderLayer = styled.div`
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:1000000;
+    background-color: rgba(0, 0, 0, 0.2);
+`;
+
+let PreloaderContaner = styled.div`
+    position:absolute;
+    top:50%;
+    left:50%;
+`;
+
+
 
 const ProductInBasket = (props) => {
 
@@ -53,13 +72,15 @@ class Basket extends React.Component {
 
             <div className="col s3">Всего с учетом скидки:</div>
             <div className="col s3">{convertToRublesFromCents(this.props.totalPriceWhithDiscount)} руб.</div>
-        </div>
+        </div>;
 
         let error = this.props.error ? <div  className="error">{this.props.error.message ? this.props.error.message : this.props.error.toString()}</div> : null;
-
+        
+        let preloader = this.props.showPreloader ? <PreloaderLayer><PreloaderContaner><Preloader/></PreloaderContaner></PreloaderLayer> : null;
 
 
         return <div className="collection">
+            {preloader}
             <div className="row">
                 <div className="col  hide-on-small-only m2"></div>
                 <div className="col s3"><Bold >Продукт</Bold ></div>
@@ -100,13 +121,24 @@ const mapStateToProps = (state) => {
         });
     }
 
+    let showPreloader = false;
+    if(state.preloader && state.preloader.basket){
+        for(let loadingProcess of Object.values(state.preloader.basket)){
+            if(loadingProcess){
+                showPreloader = true;
+                break;
+            }
+        }
+    }
+
     return {
         products,
         totalPriceWhithDiscount: state.basket.totalPriceWhithDiscount,
         totalPrice: state.basket.totalPrice,
         discount: state.basket.discountMoney || state.basket.discountPercent,
         discountMeasure: state.basket.discountMoney ? 'руб.' : (state.basket.discountPercent ? '%' : ''),
-        error: state.basket.error
+        error: state.basket.error,
+        showPreloader
     };
 };
 

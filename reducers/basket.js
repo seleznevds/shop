@@ -1,6 +1,5 @@
 import {
-    RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED, RECEIVE_ORDER, CREATE_ORDER_ERROR_OCCURED,
-    LOADING_PROCESS_START, LOADING_PROCESS_COMPLETE
+    RECEIVE_BASKET, RECEIVE_BASKET_EXTENDED, RECEIVE_ORDER, CREATE_ORDER_ERROR_OCCURED
 } from '../actions/actionConstants';
 
 const calculateTotalAndTotalDiscount = ({ products,
@@ -39,8 +38,7 @@ let initialState = {
     discountPercent: 0,
     discountMoney: 0,
     quantity: 0,
-    error: null,
-    loading: false
+    error: null
 };
 
 export default (state = initialState, action) => {
@@ -94,25 +92,7 @@ export default (state = initialState, action) => {
 
 
         case RECEIVE_ORDER:
-            return initialState;
-
-        case LOADING_PROCESS_START:
-            if (action.payload.resourceType === 'basket') {
-                return {
-                    ...state,
-                    loading: true
-                }
-            }
-            return state;
-
-        case LOADING_PROCESS_COMPLETE:
-            if (action.payload.resourceType === 'basket') {
-                return {
-                    ...state,
-                    loading: false
-                }
-            }
-            return state;
+            return initialState;        
             
         default:
             return state;
