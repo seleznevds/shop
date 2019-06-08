@@ -15,6 +15,7 @@ class MyDocument extends Document {
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta name="google" content="notranslate" />    
+          <meta name="csrf-token" content={this.props.csrfToken}></meta>
           <script src="/materialize/materialize.min.js" async></script>
           <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
         </Head>
@@ -45,7 +46,8 @@ class MyDocument extends Document {
             {initialProps.styles}
             {sheet.getStyleElement()}
           </>
-        )
+        ),
+        csrfToken: ctx.req.csrfToken()
       }
     } finally {
       sheet.seal()

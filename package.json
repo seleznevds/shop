@@ -15,6 +15,7 @@
     "axios": "^0.18.1",
     "connect-mongo": "^2.0.3",
     "cors": "^2.8.5",
+    "csurf": "^1.10.0",
     "dotenv": "^7.0.0",
     "escape-html": "^1.0.3",
     "express": "^4.17.1",

@@ -11,6 +11,7 @@ const api = require('./api');
 const auth = require('./googleAuth');
 const config = require('./config');
 const getRootUrl = require('../lib/getRootUrl');
+const csrf = require('csurf');
 
 
 
@@ -69,6 +70,15 @@ app.prepare().then(async () => {
     server.use(session(sess));
 
     server.use(bodyParser.json());
+    server.use(csrf());
+    // error handler
+    server.use(function (err, req, res, next) {
+        if (err.code !== 'EBADCSRFTOKEN') return next(err);
+    
+        // handle CSRF token errors here
+        res.status(403);
+        res.send('form tampered with');
+    })
 
     // Set up a whitelist and check against it:
 
